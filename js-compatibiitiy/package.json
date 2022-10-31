@@ -1,0 +1,35 @@
+{
+  "name": "js-compatibility",
+  "version": "1.0.0",
+  "description": "",
+  "main": "checker.js",
+  "scripts": {
+    "mklink:csv": "mklink /H \"./node_modules/eslint/lib/cli-engine/formatters/csv.js\" \"./formatters/csv.js\"",
+    "mklink:csvsimple": "mklink /H \"./node_modules/eslint/lib/cli-engine/formatters/csvsimple.js\" \"./formatters/csvsimple.js\"",
+    "mklink:vscode": "mklink /H \"./node_modules/eslint/lib/cli-engine/formatters/vscode.js\" \"./formatters/vscode.js\"",
+    "mklink:vscodesimple": "mklink /H \"./node_modules/eslint/lib/cli-engine/formatters/vscodesimple.js\" \"./formatters/vscodesimple.js\"",
+    "mklink": "npm run mklink:csv && npm run mklink:csvsimple && npm run mklink:vscode && npm run mklink:vscodesimple",
+    "check:d": "node checker.js -d ./testData",
+    "check:d:vscode": "node checker.js -d ./testData -f ../formatters/vscode.js",
+    "check:d:vscodesimple": "node checker.js -d ./testData -f ../formatters/vscodesimple.js",
+    "check:d:csv": "node checker.js -d ./testData -f ../formatters/csv.js",
+    "check:d:csvsimple": "node checker.js -d ./testData -f ../formatters/csvsimple.js",
+    "check:p": "node checker.js -p jspdf",
+    "check:p:vscode": "node checker.js -p jspdf -f vscode",
+    "check:p:vscodesimple": "node checker.js -p jspdf -f vscodesimple",
+    "check:p:csv": "node checker.js -p jspdf -f csv",
+    "check:p:csvsimple": "node checker.js -p jspdf -f csvsimple",
+    "check:all": "npm run check:d:vscode && npm run check:d:csv && npm run check:p:vscodesimple && npm run check:p:csvsimple"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.40.1",
+    "eslint": "^8.25.0",
+    "eslint-plugin-es": "^4.1.0"
+  },
+  "dependencies": {
+    "commander": "^9.4.1"
+  }
+}
