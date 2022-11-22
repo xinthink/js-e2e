@@ -84,7 +84,7 @@ async function downloadPackage(downloadDir, pkgName, forceClean) {
     }
 
     let checkOptions = ["--cache", "-c", `${__dirname}/conf/.eslintrc.yml`, "--ext", ".js,.ts"];
-    checkOptions.push("--ignore-pattern", `!node_modules/*`);
+    checkOptions.push("--ignore-pattern", `!node_modules/*`, "--ignore-pattern", `**/*.d.ts`);
     if (!!options.formatter) {
         checkOptions.push("-f", options.formatter);
     }
@@ -104,21 +104,20 @@ async function downloadPackage(downloadDir, pkgName, forceClean) {
     let exitCode = await spawn(CMD_ESLINT, checkOptions, { ...commonCmdOptions, ...{ cwd: checkPath } });
     switch (exitCode) {
         case 0:
-            console.log(chalk.green(`\n检测完成，未检出问题。`));
+            console.log(chalk.green(`\n通过检测，无问题。`));
             break;
         case 1:
-            console.log(chalk.red(`\n检测完成，存在兼容问题，请根据检查结果处理。`));
+            console.log(chalk.bold(chalk.green('\n检测完成')) + '，' + chalk.red(`存在兼容问题，具体文件见检查报告。`));
+            if (!!outputFile) {
+                console.log(`检查报告文件：${path.normalize(outputFile)}`);
+            }
             break;
         case 2:
-            console.log(chalk.red(`\n检测失败，可能由于lint配置或其他内部错误导致检测未能成功。`));
+            console.log(chalk.red(`\n检测失败，可能原因：错误的lint配置或其他内部错误，请查看上面输出的日志处理，重新检测。`));
             break;
         default:
-            console.log(chalk.red(`\n检测失败，请查看日志处理。`));
+            console.log(chalk.red(`\n检测失败，请查看上面输出的日志处理，重新检测。`));
             break;
-    }
-
-    if (!!outputFile) {
-        console.log(`检查报告文件：${path.normalize(outputFile)}`);
     }
 
     // Resets output color, for prevent change on top level

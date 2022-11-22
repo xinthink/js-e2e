@@ -1,9 +1,43 @@
 # 简介
 基于eslint进行封装、配置规则，分析出JS库代码对NodeJS和Web浏览器的内置模块、对象的依赖及兼容ES标准版本。支持检查指定源码目录和指定三方库的兼容性。
 
-# 环境准备
+# 快速使用
 
-安装git、nodejs工具，下载本库代码，通过”npm install i“安装依赖即完成程序环境准备，接下来参考下文进行操作。
+- 安装git、nodejs工具，下载本库代码。
+
+```bash
+git clone https://gitee.com/chenwenjiehw/js-e2e.git
+```
+
+- 安装依赖npm包
+
+```bash
+cd js-compatibiitiy
+npm i
+```
+
+- 安装自定义的eslint输出[报告formatter](./formatters/)，包含csv、csvsimple、vscode、vscodesimple。
+```bash
+npm run mklink
+```
+
+- 执行检测命令。
+
+```bash
+# 相对路径 ./testData
+node checker.js -d ./testData
+
+# 绝对路径
+node checker.js -d D:/temp/js-e2e/js-compatibiitiy/testData
+
+# -p指定要检测的npm包，自动从npm registry下载
+node checker.js -p jspdf
+
+# -f csv 指定报告输出到csv文件
+node checker.js -p jspdf -f csv
+
+```
+
 
 # 功能说明
 
@@ -27,17 +61,24 @@ node checker.js -d D:/temp/js-e2e/js-compatibiitiy/testData
 node checker.js -p jspdf
 ```
 
-## 检查规则
+## 定制检查规则
 
-基于eslint:recommended扩展一份eslint规则文件[conf/.eslintrc.yml](conf/.eslintrc.yml)，屏蔽所有代码格式相关告警错误，减少干扰。eslint配置、规则（Rule）设置等参考[eslint官方文档](http://eslint.cn/docs/rules/)。
+项目提供了一份基于eslint:recommended扩展的eslint规则文件[conf/.eslintrc.yml](conf/.eslintrc.yml)，**屏蔽所有代码格式相关告警错误**，ES标准版对应为**ES2022**，减少干扰。eslint配置、规则（Rule）设置等参考[eslint官方文档](http://eslint.cn/docs/rules/)。
 
 ### 指定脚本的运行环境
 
-并在env设置node和browser的值为false，即禁用node.js和浏览器环境，而每种环境都有一组特定的预定义全局变量，如使用这些全局变量则报错no-undef错误。
+默认的eslint规则文件[conf/.eslintrc.yml](conf/.eslintrc.yml)禁用node.js和浏览器环境，而每种环境都有一组特定的预定义全局变量，如使用这些全局变量则报错no-undef错误。ES标准全部开启（从ES6到ES2022），如需要不兼容高版本的ES标准，可以将对应的版本改成false。
 
 ```yaml
 env:
   es6: true
+  es2016: true
+  es2017: true
+  es2018: true
+  es2019: true
+  es2020: true
+  es2021: true
+  es2022: true
   commonjs: true
   node: false
   browser: false
@@ -89,7 +130,8 @@ env:
 如使用的当前项目下的eslint工具，可以建一个链接，将格式化器文件链接到node_modules\eslint\lib\cli-engine\formatters目录（这里就建一个硬链接，因为建软连接报“ 没有足够的权限执行此操作。”，需要管理员权限，而建硬链接不需要管理员权限）。
 如使用的是全局eslint，需要将格式化器文件复制到eslint的%node_global%\node_modules\eslint\lib\cli-engine\formatters目录下。如：
 ```bash
-mklink /H .\node_modules\eslint\lib\cli-engine\formatters\csv.js .\csv.js
+# 已在package.json中配置mklink任务（等价于：mklink /H .\node_modules\eslint\lib\cli-engine\formatters\csv.js .\csv.js）
+npm run mklink
 ```
 
 下面就可以使用-f参数指定格式化器。
@@ -122,16 +164,16 @@ Options:
 
 详细使用示例：
 
-1. 按包名检查，如：检查crypto-js包，要求下载前先清理，并使用csvsimple格式化器输出结果到文件d:/temp/a.txt。
+1. 按包名检查，如：检查crypto-js包，要求下载前先清理，并使用csvsimple格式化器输出结果到文件d:/temp/report.txt。
 
 ```
-node "D:/temp/js-e2e/js-compatibiitiy/checker.js" -p crypto-js -f csvsimple --clean -o "d:/temp/a.txt"
+node "D:/temp/js-e2e/js-compatibiitiy/checker.js" -p crypto-js -f csvsimple --clean -o "d:/temp/report.csv"
 ```
 
 2. 检查本地路径源码。
 
    ```
-   node "D:/temp/js-e2e/js-compatibiitiy/checker.js" -d D:\test-code -f csvsimple --clean -o "d:/temp/a.txt"
+   node "D:/temp/js-e2e/js-compatibiitiy/checker.js" -d D:\test-code -f csvsimple --clean -o "d:/temp/report.txt"
    ```
 
 另在package.json中已定义了多个测试脚本，可通过"npm run check:d"等执行对应的脚本，可参考使用。
