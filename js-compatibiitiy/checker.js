@@ -2,26 +2,14 @@
 
 const fs = require('fs');
 const path = require('path');
-const child_process = require('child_process');
 const { program } = require('commander');
 const chalk = require("chalk");
+const myprocess = require('./myprocess');
 
 const commonCmdOptions = { encoding: "utf8", stdio: "inherit" };
 const CMD_NPM = process.platform === "win32" ? "npm.cmd" : "npm";
 const CMD_ESLINT = process.platform === "win32" ? `${__dirname}.\\node_modules\\.bin\\eslint.cmd` : `${__dirname}.\\node_modules\\.bin\\eslint`;
 const CWD = process.cwd();
-
-/*
- * 将child_process.spawn封装成Promise方式调用。
- */
-function spawn(command, args, options) {
-    return new Promise(function (resolve, reject) {
-        let eslintProcess = child_process.spawn(command, args, options);
-        eslintProcess.on('close', (code) => {
-            resolve(code);
-        });
-    })
-}
 
 /*
  * 使用“npm i --no-save pkgName”下载npm包
@@ -32,7 +20,7 @@ async function downloadPackage(downloadDir, pkgName, forceClean) {
         fs.rmSync(dirNodeModules, { recursive: true });
     }
 
-    let exitCode = await spawn(CMD_NPM,
+    let exitCode = await myprocess.spawn(CMD_NPM,
         ["i", "--no-save", pkgName],
         { ...commonCmdOptions, ...{ cwd: downloadDir } });
 
@@ -101,7 +89,7 @@ async function downloadPackage(downloadDir, pkgName, forceClean) {
     }
 
     checkOptions.push(`${checkPath}`);
-    let exitCode = await spawn(CMD_ESLINT, checkOptions, { ...commonCmdOptions, ...{ cwd: checkPath } });
+    let exitCode = await myprocess.spawn(CMD_ESLINT, checkOptions, { ...commonCmdOptions, ...{ cwd: checkPath } });
     switch (exitCode) {
         case 0:
             console.log(chalk.green(`\n通过检测，无问题。`));
@@ -122,6 +110,8 @@ async function downloadPackage(downloadDir, pkgName, forceClean) {
 
     // Resets output color, for prevent change on top level
     chalk.reset();
+    process.exitCode = exitCode;
 }()).catch((error) => {
     console.error(`error: ${error}`);
+    process.exitCode = -1;
 })
