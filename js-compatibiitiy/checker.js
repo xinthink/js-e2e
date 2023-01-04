@@ -83,7 +83,16 @@ async function downloadPackage(downloadDir, pkgName, forceClean) {
         checkOptions.push("-o", outputFile);
     } else {
         if (!!options.formatter && options.formatter.indexOf('csv') >= 0) {
-            outputFile = `${__dirname}/report${options.package ? '.' + options.package : ''}.csv`;
+            if (!!options.package) {
+                const reportDir = `${__dirname}/reports`;
+                if (!fs.existsSync(reportDir)) {
+                    fs.mkdirSync(reportDir);
+                }
+                outputFile = `${reportDir}/${options.package}.csv`;
+            } else {
+                outputFile = `${__dirname}/report.csv`;
+            }
+
             checkOptions.push("-o", outputFile);
         }
     }
