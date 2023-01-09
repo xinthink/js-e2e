@@ -35,6 +35,7 @@ plugins:
   - "@typescript-eslint" # npm install --save-dev @typescript-eslint/eslint-plugin
   - "eslint-plugin-es" # npm install --save-dev eslint-plugin-es
   - "import"  # npm install eslint-plugin-import --save-dev
+  - "react-internal" # npm i -D eslint-plugin-react-internal .\scripts\eslint-rules
 globals:
   clearTimeout: true
   clearInterval: true
