@@ -61,6 +61,13 @@ node checker.js -d D:/temp/js-e2e/js-compatibiitiy/testData
 node checker.js -p jspdf
 ```
 
+## 批量检查
+将需要检查的三方库添加到[./pkglist]文件，每个库占一行
+```
+# 检查jspdf库
+node batchchecker.js
+```
+
 ## 定制检查规则
 
 项目提供了一份基于eslint:recommended扩展的eslint规则文件[conf/.eslintrc.yml](conf/.eslintrc.yml)，**屏蔽所有代码格式相关告警错误**，ES标准版对应为**ES2022**，减少干扰。eslint配置、规则（Rule）设置等参考[eslint官方文档](http://eslint.cn/docs/rules/)。
