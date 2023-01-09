@@ -72,7 +72,12 @@ async function downloadPackage(downloadDir, pkgName, forceClean) {
     }
 
     let checkOptions = ["--cache", "-c", `${__dirname}/conf/.eslintrc.yml`, "--ext", ".js,.ts"];
-    checkOptions.push("--ignore-pattern", `!node_modules/*`, "--ignore-pattern", `**/*.d.ts`);
+    checkOptions.push(
+        "--ignore-pattern", `!node_modules/*`,
+        "--ignore-pattern", `**/*.d.ts`,
+        "--ignore-pattern", `**/*.jest.js`
+    );
+
     if (!!options.formatter) {
         checkOptions.push("-f", options.formatter);
     }
