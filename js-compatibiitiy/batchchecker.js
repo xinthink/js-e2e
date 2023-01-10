@@ -6,65 +6,111 @@ const iconv = require('iconv-lite');
 const output_file_encoding = 'gbk';
 const summary_file = path.join(__dirname, `summary.csv`);
 
-function exitCode2String(exitCode) {
-    switch (exitCode) {
-        case 0:
-            return '检测通过';
-        case 1:
-            return '检测不通过';
-        case 2:
-        default:
-            return '检测执行异常';
+
+class ErrorCounter {
+    _name;
+    _count;
+    constructor(name, count) {
+        this._name = name;
+        this._count = count;
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    get count() {
+        return this._count;
+    }
+
+    set count(newValue) {
+        this._count = newValue;
+    }
+
+    toString() {
+        return `${this._name} (${this._count})`;
     }
 }
 
-// 获取行数
+function exitCode2String(exitCode) {
+    switch (exitCode) {
+        case 0:
+            return '通过';
+        case 1:
+            return '不通过';
+        case 2:
+        default:
+            return '执行异常';
+    }
+}
+
+function increaseErrCount(errCounterArr, name) {
+    if (name) {
+        let missingObj = errCounterArr.find(element => element.name == name);
+        if (missingObj) {
+            missingObj.count++;
+        } else {
+            errCounterArr.push(new ErrorCounter(name, 1));
+        }
+    }
+}
+
+function increaseErrCountByMsg(errCounterArr, errMsg) {
+    let name = errMsg.split(' ')[0].replaceAll("'", "").replaceAll('"', '');
+    name = name ?? '其他'
+    increaseErrCount(errCounterArr, name);
+}
+
+// 分析检查报告
 function summarizeReport(reportFileFullname) {
     if (fs.existsSync(reportFileFullname)) {
         let fileContent = fs.readFileSync(reportFileFullname, { encoding: 'utf8' });
-        const reportList = fileContent.split('\n').slice(1).slice(0, -1);
+        const reportList = fileContent.split('\n').slice(1, -1);
         const ruleIdIdx = 4;
-        const errorMsgIdx = 5;
-        let ruleIds = [];
-        let noUndefNames = [];
-        let noRestrictedModulesNames = [];
+        const errMsgIdx = 5;
+
         let noUndefCount = 0;
-        let noRestrictedModulesCount = 0;
+        let noUndefNames = [];
+        let noRestrictedModuleCount = 0;
+        let noRestrictedModules = [];
+        let noRestrictedGlobalCount = 0;
+        let noRestrictedGlobals = [];
+        let otherRuleCount = 0;
+        let otherRules = [];
         for (let i = 0; i < reportList.length; i++) {
             let reportDetails = reportList[i].split(',');
             let ruleId = reportDetails[ruleIdIdx];
-            let errorMsg = reportDetails[errorMsgIdx];
+            let errMsg = reportDetails[errMsgIdx];
             switch (ruleId) {
                 case 'no-undef':
                     noUndefCount++;
-                    let noUndefName = errorMsg.split(' ')[0].replaceAll("'", "").replaceAll('"', '');
-                    if(noUndefName && !noUndefNames.includes(noUndefName)){
-                        noUndefNames.push(noUndefName);
-                    }
+                    increaseErrCountByMsg(noUndefNames, errMsg);
                     break;
                 case 'no-restricted-modules':
-                    noRestrictedModulesCount++;
-                    let noRestrictedModulesName = errorMsg.split(' ')[0].replaceAll("'", "").replaceAll('"', '');
-                    if(noRestrictedModulesName && !noRestrictedModulesNames.includes(noRestrictedModulesName)){
-                        noRestrictedModulesNames.push(noRestrictedModulesName);
-                    }
+                    noRestrictedModuleCount++;
+                    increaseErrCountByMsg(noRestrictedModules, errMsg);
+                    break;
+                case 'no-restricted-globals':
+                    noRestrictedGlobalCount++;
+                    increaseErrCountByMsg(noRestrictedGlobals, errMsg);
                     break;
                 default:
+                    otherRuleCount++;
+                    increaseErrCount(otherRules, ruleId);
                     break;
-            }
-
-            if (!ruleIds.includes(ruleId)) {
-                ruleIds.push(ruleId);
             }
         }
 
         return {
-            errorCount: reportList.length,
+            'errorCount': reportList.length,
             noUndefCount,
-            noUndefNames: noUndefNames.sort(),
-            noRestrictedModulesCount,
-            noRestrictedModulesNames: noRestrictedModulesNames.sort(),
-            ruleIds
+            'noUndefNames': noUndefNames.sort(),
+            noRestrictedModuleCount,
+            'noRestrictedModules': noRestrictedModules.sort(),
+            noRestrictedGlobalCount,
+            'noRestrictedGlobals': noRestrictedGlobals.sort(),
+            otherRuleCount,
+            'otherRules': otherRules.sort()
         }
     } else {
         return undefined;
@@ -79,7 +125,13 @@ function summarizeReport(reportFileFullname) {
 
     fs.appendFileSync(
         summary_file,
-        iconv.encode(`包名,检测结果,错误数,错误RuleIds,no-undef数,no-undef对象,no-restrict-modules数,no-restrict-modules模块\r\n`, output_file_encoding)
+        iconv.encode('包名,检测结果,错误总数'
+            + ',未声明的变量,错误数'
+            + ',禁用的模块,错误数'
+            + ',禁用的全局变量,错误数'
+            + ',其他错误,错误数'
+            + ',报告地址'
+            + '\r\n', output_file_encoding)
     );
 
     let strPkgList = fs.readFileSync(path.join(__dirname, 'pkglist.txt'), { encoding: 'utf8' });
@@ -98,11 +150,15 @@ function summarizeReport(reportFileFullname) {
             iconv.encode(`${pkgList[pkgIdx]},`
                 + `${exitCode2String(exitCode)},`
                 + `${reportSummary ? reportSummary.errorCount : ''},`
-                + `${reportSummary ? '"' + reportSummary.ruleIds.join("\r\n") + '"' : ''},`
-                + `${reportSummary ? reportSummary.noUndefCount : ''},`
                 + `${reportSummary ? '"' + reportSummary.noUndefNames.join("\r\n") + '"' : ''},`
-                + `${reportSummary ? reportSummary.noRestrictedModulesCount : ''},`
-                + `${reportSummary ? '"' + reportSummary.noRestrictedModulesNames.join("\r\n") + '"' : ''},`
+                + `${reportSummary ? reportSummary.noUndefCount : ''},`
+                + `${reportSummary ? '"' + reportSummary.noRestrictedModules.join("\r\n") + '"' : ''},`
+                + `${reportSummary ? reportSummary.noRestrictedModuleCount : ''},`
+                + `${reportSummary ? '"' + reportSummary.noRestrictedGlobals.join("\r\n") + '"' : ''},`
+                + `${reportSummary ? reportSummary.noRestrictedGlobalCount : ''},`
+                + `${reportSummary ? '"' + reportSummary.otherRules.join("\r\n") + '"' : ''},`
+                + `${reportSummary ? reportSummary.otherRuleCount : ''},`
+                + `${reportFile},`
                 + '\r\n', output_file_encoding));
     }
 })();
