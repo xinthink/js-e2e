@@ -5,6 +5,7 @@
 "use strict";
 
 const chalk = require("chalk");
+const ruleIdFilter = require('./ruleIdFilter');
 
 //------------------------------------------------------------------------------
 // Helper Functions
@@ -22,11 +23,6 @@ function getMessageType(message) {
     return chalk.yellow("Warning");
 }
 
-const SIMPLE_RULE_IDs = ["no-restricted-global", "no-restricted-modules", "no-undef"]
-function isSampleRuleId(ruleId) {
-    return SIMPLE_RULE_IDs.includes(ruleId);
-}
-
 //------------------------------------------------------------------------------
 // Public Interface
 //------------------------------------------------------------------------------
@@ -37,7 +33,7 @@ module.exports = function (results) {
     results.forEach(result => {
         const messages = result.messages;
         messages.forEach((message) => {
-            if (isSampleRuleId(message.ruleId)) {
+            if (ruleIdFilter.isSampleRuleId(message.ruleId) && ruleIdFilter.isCodeErrorRuleId(message)) {
                 total++;
                 output += `${result.filePath}:${message.line || 0}:${message.column || 0}, `;
                 output += `${getMessageType(message)}, `;

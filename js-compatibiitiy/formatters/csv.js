@@ -4,6 +4,8 @@
  */
 "use strict";
 
+const ruleIdFilter = require('./ruleIdFilter');
+
 //------------------------------------------------------------------------------
 // Helper Functions
 //------------------------------------------------------------------------------
@@ -29,16 +31,18 @@ module.exports = function (results) {
     results.forEach(result => {
         const messages = result.messages;
         messages.forEach((message) => {
-            output += `${result.filePath},`;
-            output += `${message.line || 0},`;
-            output += `${message.column || 0},`;
-            output += `${getMessageType(message)},`;
-            output += `${message.ruleId ? `${message.ruleId}` : ""},`;
-            output += `"${message.message}",`;
-            output += "\n";
+            if (ruleIdFilter.isCodeErrorRuleId(message)) {
+                output += `${result.filePath},`;
+                output += `${message.line || 0},`;
+                output += `${message.column || 0},`;
+                output += `${getMessageType(message)},`;
+                output += `${message.ruleId ? `${message.ruleId}` : ""},`;
+                output += `"${message.message}",`;
+                output += "\n";
+            }
         });
 
     });
-    
+
     return output;
 }

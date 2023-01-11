@@ -31,19 +31,6 @@ env:
   embertest: false
   webextensions: false
   greasemonkey: false
-plugins:
-  - "@typescript-eslint" # npm install --save-dev @typescript-eslint/eslint-plugin
-  - "eslint-plugin-es" # npm install --save-dev eslint-plugin-es
-  - "import"  # npm install eslint-plugin-import --save-dev
-  - "react-internal" # npm i -D eslint-plugin-react-internal .\scripts\eslint-rules
-  - "node"  # npm install eslint-plugin-node --save-dev
-  - "es"  # npm install eslint-plugin-es --save-dev
-  - "regexp"  # npm install eslint-plugin-regexp --save-dev
-  - "unicorn"  # npm install eslint-plugin-unicorn --save-dev
-  - "promise"  # npm install eslint-plugin-promise --save-dev
-  - "jsdoc"  # npm install eslint-plugin-jsdoc --save-dev
-  - "eslint-plugin"  # npm install eslint-plugin-eslint-plugin --save-dev
-  - "no-null"  # npm install eslint-plugin-no-null --save-dev
 globals:
   clearTimeout: true
   clearInterval: true

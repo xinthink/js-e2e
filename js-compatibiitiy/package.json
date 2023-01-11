@@ -8,7 +8,8 @@
     "mklink:csvsimple": "mklink /H \"./node_modules/eslint/lib/cli-engine/formatters/csvsimple.js\" \"./formatters/csvsimple.js\"",
     "mklink:vscode": "mklink /H \"./node_modules/eslint/lib/cli-engine/formatters/vscode.js\" \"./formatters/vscode.js\"",
     "mklink:vscodesimple": "mklink /H \"./node_modules/eslint/lib/cli-engine/formatters/vscodesimple.js\" \"./formatters/vscodesimple.js\"",
-    "mklink": "npm run mklink:csv && npm run mklink:csvsimple && npm run mklink:vscode && npm run mklink:vscodesimple",
+    "mklink:ruleIdFilter": "mklink /H \"./node_modules/eslint/lib/cli-engine/formatters/ruleIdFilter.js\" \"./formatters/ruleIdFilter.js\"",
+    "mklink": "npm run mklink:csv && npm run mklink:csvsimple && npm run mklink:vscode && npm run mklink:vscodesimple && npm run mklink:ruleIdFilter",
     "check:d": "node checker.js -d ./testData",
     "check:d:vscode": "node checker.js -d ./testData -f ../formatters/vscode.js",
     "check:d:vscodesimple": "node checker.js -d ./testData -f ../formatters/vscodesimple.js",
@@ -25,18 +26,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.40.1",
-    "eslint": "^8.31.0",
-    "eslint-plugin-es": "^4.1.0",
-    "eslint-plugin-eslint-plugin": "^5.0.7",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-jsdoc": "^39.6.4",
-    "eslint-plugin-no-null": "^1.0.2",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-react-internal": "file:scripts/eslint-rules",
-    "eslint-plugin-regexp": "^1.12.0",
-    "eslint-plugin-unicorn": "^45.0.2"
+    "eslint": "^8.31.0"
   },
   "dependencies": {
     "commander": "^9.4.1",

@@ -5,6 +5,7 @@
 "use strict";
 
 const chalk = require("chalk");
+const ruleIdFilter = require('./ruleIdFilter');
 
 //------------------------------------------------------------------------------
 // Helper Functions
@@ -32,19 +33,17 @@ module.exports = function (results) {
         total = 0;
 
     results.forEach(result => {
-
         const messages = result.messages;
-
-        total += messages.length;
-
         messages.forEach((message, index) => {
-            output += `${result.filePath}:${message.line || 0}:${message.column || 0}, `;
-            output += `${getMessageType(message)}, `;
-            output += `${message.ruleId ? `${message.ruleId}` : ""}, `;
-            output += `${message.message}`;
-            output += "\n";
+            if (ruleIdFilter.isCodeErrorRuleId(message)) {
+                total++;
+                output += `${result.filePath}:${message.line || 0}:${message.column || 0}, `;
+                output += `${getMessageType(message)}, `;
+                output += `${message.ruleId ? `${message.ruleId}` : ""}, `;
+                output += `${message.message}`;
+                output += "\n";
+            }
         });
-
     });
 
     if (total > 0) {
