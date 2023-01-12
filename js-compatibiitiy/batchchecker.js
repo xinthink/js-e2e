@@ -61,6 +61,12 @@ function increaseErrCountByMsg(errCounterArr, errMsg) {
     increaseErrCount(errCounterArr, name);
 }
 
+function increaseErrCountByNoGlobalVarMsg(errCounterArr, errMsg) {
+    let name = errMsg.split("'")[1].replaceAll("'", "").replaceAll('"', '');
+    name = name ?? '其他'
+    increaseErrCount(errCounterArr, name);
+}
+
 // 分析检查报告
 function summarizeReport(reportFileFullname) {
     if (fs.existsSync(reportFileFullname)) {
@@ -92,7 +98,7 @@ function summarizeReport(reportFileFullname) {
                     break;
                 case 'no-restricted-globals':
                     noRestrictedGlobalCount++;
-                    increaseErrCountByMsg(noRestrictedGlobals, errMsg);
+                    increaseErrCountByNoGlobalVarMsg(noRestrictedGlobals, errMsg);
                     break;
                 default:
                     otherRuleCount++;
