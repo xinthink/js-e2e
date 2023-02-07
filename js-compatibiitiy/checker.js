@@ -5,6 +5,7 @@ const path = require('path');
 const { program } = require('commander');
 const chalk = require("chalk");
 const myprocess = require('./myprocess');
+const iconv = require('iconv-lite');
 
 const commonCmdOptions = { encoding: "utf8", stdio: "inherit" };
 const CMD_NPM = process.platform === "win32" ? "npm.cmd" : "npm";
@@ -27,17 +28,35 @@ async function downloadPackage(downloadDir, pkgName, forceClean) {
     if (exitCode === 0) {
         let subItems = fs.readdirSync(dirNodeModules);
         subItems.forEach(pkgItem => {
-            let lintrcFiles = ['.eslintignore', '.eslintrc.js', '.eslintrc.yml', '.eslintrc.json'];
+            let lintrcFiles = ['.eslintignore', '.eslintrc', '.eslintrc.js', '.eslintrc.yml', '.eslintrc.json'];
             lintrcFiles.forEach(lintFile => {
                 if (fs.existsSync(`${dirNodeModules}/${pkgItem}/${lintFile}`)) {
                     fs.unlinkSync(`${dirNodeModules}/${pkgItem}/${lintFile}`)
                 }
+
+                ['amd', 'cjs', 'modules'].forEach(subDir => {
+                    if (fs.existsSync(`${dirNodeModules}/${pkgItem}/${subDir}/${lintFile}`)) {
+                        fs.unlinkSync(`${dirNodeModules}/${pkgItem}/${subDir}/${lintFile}`)
+                    }
+                });
             });
+
+            const pkgJsonFile = `${dirNodeModules}/${pkgItem}/package.json`;
+            if (fs.existsSync(pkgJsonFile)) {
+                const packageJson = require(pkgJsonFile);
+                if (packageJson.eslintConfig) {
+                    delete packageJson.eslintConfig;
+                    fs.writeFileSync(
+                        pkgJsonFile,
+                        iconv.encode(JSON.stringify(packageJson), 'utf8')
+                    );
+                }
+            }
         });
 
         return true;
     } else {
-        console.log(`download process exited. exit code: ${exitCode}`)
+        console.log(`download process exited. exit code: ${exitCode}`);
         return false;
     }
 }
