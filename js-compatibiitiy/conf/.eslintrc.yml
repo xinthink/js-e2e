@@ -15,11 +15,14 @@ globals:
   globalThis: true
   setTimeout: true
   setInterval: true
+  Intl: true
 parserOptions:
   ecmaVersion: 2022
   sourceType: module
 rules:
-  no-undef: error
+  no-undef:
+    - error
+    - typeof: false
   no-restricted-globals:
     - error
     - escape
