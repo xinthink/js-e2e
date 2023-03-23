@@ -16,31 +16,44 @@
 function hasTypeOfOperator(node) {
     const parent = node.parent;
 
-    if (parent.type === "UnaryExpression") {
+    if (parent.type === "UnaryExpression") {    // typeof define == 'function'
         return parent.operator === "typeof";
     }
 
-    if (parent.type === "MemberExpression") {
-        let logicNode = parent.parent;
-        if (logicNode.type === "BinaryExpression") {
-            logicNode = logicNode.parent;
-        }
+    // if (parent.type === "MemberExpression") {
+    //     if (parent.parent.type === "LogicalExpression") {  // o = "function" == typeof define && define.amd
+    //         return isTypeOfBinaryExpression(parent.parent.left, node.name);
+    //     } else if (parent.parent.type === "BinaryExpression") { // typeof define && define.amd == 'amd'
+    //         return isTypeOfBinaryExpression(parent.parent.parent.left, node.name);
+    //     }
+    // } else if (parent.type === "LogicalExpression") {   // var freeSelf = typeof self == 'object' && self
+    //     return isTypeOfBinaryExpression(parent.left, node.name);
+    // }
 
-        while (logicNode.type === "LogicalExpression") {
+    let logicNode = parent;
+    while (logicNode.type !== "Program") {
+        if (logicNode.type === "LogicalExpression") {
             if (isTypeOfBinaryExpression(logicNode.left, node.name)) {
                 return true;
             }
-
-            logicNode = logicNode.parent;
-        }
-    } else if (parent.type === "LogicalExpression") {   // var freeSelf = typeof self == 'object' && self
-        let logicNode = parent;
-        while (logicNode.type === "LogicalExpression") {
-            if (isTypeOfBinaryExpression(logicNode.left, node.name)) {
+        } else if (logicNode.type === "IfStatement" || logicNode.type === "ConditionalExpression") {
+            if (isTypeOfBinaryExpression(logicNode.test, node.name)) {
                 return true;
             }
+        }
 
-            logicNode = logicNode.parent;
+        logicNode = logicNode.parent;
+    }
+
+    return false;
+}
+
+function isTypeOfIdentifier(node, identifierName) {
+    if (node.type === "BinaryExpression") {
+        if (node.left.type === "UnaryExpression") { // typeof define == "function"
+            return node.left.operator === "typeof" && node.left.argument.name === identifierName
+        } else if (node.right.type === "UnaryExpression") { // "function" == typeof define
+            return node.right.operator === "typeof" && node.right.argument.name === identifierName
         }
     }
 
@@ -48,12 +61,10 @@ function hasTypeOfOperator(node) {
 }
 
 function isTypeOfBinaryExpression(node, identifierName) {
-    if (node.type === "BinaryExpression") {
-        if (node.left.type === "UnaryExpression") { // typeof define == "function"
-            return node.left.operator === "typeof" && node.left.argument.name === identifierName
-        } else if (node.right.type === "UnaryExpression") { // "function" == typeof define
-            return node.right.operator === "typeof" && node.right.argument.name === identifierName
-        }
+    if (node.type === "LogicalExpression") {
+        return isTypeOfBinaryExpression(node.left, identifierName) || isTypeOfBinaryExpression(node.right, identifierName);
+    } else {
+        return isTypeOfIdentifier(node, identifierName);
     }
 
     return false;
