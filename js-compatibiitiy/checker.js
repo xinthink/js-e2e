@@ -49,7 +49,7 @@ function removeLintrc(dirFullname) {
 async function downloadPackage(downloadDir, pkgName, forceClean) {
     let dirNodeModules = `${downloadDir}/node_modules`;
     if (!!forceClean && fs.existsSync(dirNodeModules)) {
-        fs.rmSync(dirNodeModules, { recursive: true });
+        fs.rmSync(dirNodeModules, { force: true, recursive: true, maxRetries: 3, retryDelay: 100 });
     }
 
     let exitCode = await myprocess.spawn(CMD_NPM,
