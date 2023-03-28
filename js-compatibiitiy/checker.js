@@ -27,13 +27,17 @@ function removeLintrc(dirFullname) {
 
     const pkgJsonFile = `${dirFullname}/package.json`;
     if (fs.existsSync(pkgJsonFile)) {
-        const packageJson = require(pkgJsonFile);
-        if (packageJson.eslintConfig) {
-            delete packageJson.eslintConfig;
-            fs.writeFileSync(
-                pkgJsonFile,
-                iconv.encode(JSON.stringify(packageJson), 'utf8')
-            );
+        try {
+            const packageJson = require(pkgJsonFile);
+            if (packageJson.eslintConfig) {
+                delete packageJson.eslintConfig;
+                fs.writeFileSync(
+                    pkgJsonFile,
+                    iconv.encode(JSON.stringify(packageJson), 'utf8')
+                );
+            }
+        } catch(e) {
+            console.warn(e.message);
         }
     }
 
@@ -80,12 +84,14 @@ async function downloadPackage(downloadDir, pkgName, forceClean) {
             removeLintrc(`${checkPath}/node_modules`);
         } else {
             console.log(chalk.red(`下载'${options.package}'包失败，退出检查.`));
+            process.exitCode = 2;
             return;
         }
     } else if (!!options.dir) {
         checkPath = path.resolve(CWD, options.dir);
     } else {
         console.log('请指定检查路径或包名');
+        process.exitCode = 2;
         return;
     }
 
