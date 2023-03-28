@@ -12,6 +12,37 @@ const CMD_NPM = process.platform === "win32" ? "npm.cmd" : "npm";
 const CMD_ESLINT = process.platform === "win32" ? `${__dirname}.\\node_modules\\.bin\\eslint.cmd` : `${__dirname}.\\node_modules\\.bin\\eslint`;
 const CWD = process.cwd();
 
+function removeLintrc(dirFullname) {
+    let stat = fs.statSync(dirFullname);
+    if (!!!stat || !stat.isDirectory()) {
+        return;
+    }
+
+    let lintrcFiles = ['.eslintignore', '.eslintrc', '.eslintrc.js', '.eslintrc.yml', '.eslintrc.json'];
+    lintrcFiles.forEach(lintFile => {
+        if (fs.existsSync(`${dirFullname}/${lintFile}`)) {
+            fs.unlinkSync(`${dirFullname}/${lintFile}`)
+        }
+    });
+
+    const pkgJsonFile = `${dirFullname}/package.json`;
+    if (fs.existsSync(pkgJsonFile)) {
+        const packageJson = require(pkgJsonFile);
+        if (packageJson.eslintConfig) {
+            delete packageJson.eslintConfig;
+            fs.writeFileSync(
+                pkgJsonFile,
+                iconv.encode(JSON.stringify(packageJson), 'utf8')
+            );
+        }
+    }
+
+    let subItems = fs.readdirSync(dirFullname);
+    subItems.forEach(pkgItem => {
+        removeLintrc(`${dirFullname}/${pkgItem}`);
+    });
+}
+
 /*
  * 使用“npm i --no-save pkgName”下载npm包
  */
@@ -25,40 +56,7 @@ async function downloadPackage(downloadDir, pkgName, forceClean) {
         ["i", "--no-save", pkgName],
         { ...commonCmdOptions, ...{ cwd: downloadDir } });
 
-    if (exitCode === 0) {
-        let subItems = fs.readdirSync(dirNodeModules);
-        subItems.forEach(pkgItem => {
-            let lintrcFiles = ['.eslintignore', '.eslintrc', '.eslintrc.js', '.eslintrc.yml', '.eslintrc.json'];
-            lintrcFiles.forEach(lintFile => {
-                if (fs.existsSync(`${dirNodeModules}/${pkgItem}/${lintFile}`)) {
-                    fs.unlinkSync(`${dirNodeModules}/${pkgItem}/${lintFile}`)
-                }
-
-                ['amd', 'cjs', 'modules'].forEach(subDir => {
-                    if (fs.existsSync(`${dirNodeModules}/${pkgItem}/${subDir}/${lintFile}`)) {
-                        fs.unlinkSync(`${dirNodeModules}/${pkgItem}/${subDir}/${lintFile}`)
-                    }
-                });
-            });
-
-            const pkgJsonFile = `${dirNodeModules}/${pkgItem}/package.json`;
-            if (fs.existsSync(pkgJsonFile)) {
-                const packageJson = require(pkgJsonFile);
-                if (packageJson.eslintConfig) {
-                    delete packageJson.eslintConfig;
-                    fs.writeFileSync(
-                        pkgJsonFile,
-                        iconv.encode(JSON.stringify(packageJson), 'utf8')
-                    );
-                }
-            }
-        });
-
-        return true;
-    } else {
-        console.log(`download process exited. exit code: ${exitCode}`);
-        return false;
-    }
+    return exitCode === 0;
 }
 
 (async function main() {
@@ -79,6 +77,7 @@ async function downloadPackage(downloadDir, pkgName, forceClean) {
         let result = await downloadPackage(checkPath, options.package, options.clean);
         if (result) {
             console.log(chalk.green(`完成'${options.package}'包下载.`));
+            removeLintrc(`${checkPath}/node_modules`);
         } else {
             console.log(chalk.red(`下载'${options.package}'包失败，退出检查.`));
             return;

@@ -1,0 +1,7 @@
+.eslintignore
+*.json
+**/build/
+**/test/
+**/tests/
+test.js
+*.test.js

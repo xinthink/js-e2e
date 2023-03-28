@@ -149,12 +149,17 @@ function summarizeReport(reportFileFullname) {
     }
 
     for (; pkgIdx < pkgList.length; pkgIdx++) {
+        if(!!!pkgList[pkgIdx]){
+            continue;
+        }
+
         let exitCode = await doCheck(pkgList[pkgIdx]);
         const reportFile = `${__dirname}/reports/${pkgList[pkgIdx]}.csv`;
         const reportSummary = summarizeReport(reportFile);
         if(exitCode === 1 && reportSummary.errorCount ===0) {
             exitCode = 0;
         }
+        
         fs.appendFileSync(summary_file,
             iconv.encode(`${pkgList[pkgIdx]},`
                 + `${exitCode2String(exitCode)},`
