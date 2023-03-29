@@ -1,7 +1,11 @@
 .eslintignore
 *.json
+webpack.config.js
 **/build/
 **/test/
 **/tests/
+**/__tests__/
 test.js
+test.ts
 *.test.js
+*.test.ts

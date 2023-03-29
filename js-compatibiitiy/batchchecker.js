@@ -159,7 +159,7 @@ function summarizeReport(reportFileFullname) {
         if(exitCode === 1 && reportSummary.errorCount ===0) {
             exitCode = 0;
         }
-        
+
         fs.appendFileSync(summary_file,
             iconv.encode(`${pkgList[pkgIdx]},`
                 + `${exitCode2String(exitCode)},`

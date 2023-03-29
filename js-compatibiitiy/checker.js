@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 const fs = require('fs');
 const path = require('path');
 const { program } = require('commander');
@@ -36,7 +34,7 @@ function removeLintrc(dirFullname) {
                     iconv.encode(JSON.stringify(packageJson), 'utf8')
                 );
             }
-        } catch(e) {
+        } catch (e) {
             console.warn(e.message);
         }
     }
@@ -115,8 +113,9 @@ async function downloadPackage(downloadDir, pkgName, forceClean) {
             if (!!options.package) {
                 const reportDir = `${__dirname}/reports`;
                 if (!fs.existsSync(reportDir)) {
-                    fs.mkdirSync(reportDir);
+                    fs.mkdirSync(reportDir, { recursive: true });
                 }
+
                 outputFile = `${reportDir}/${options.package}.csv`;
             } else {
                 outputFile = `${__dirname}/report.csv`;
