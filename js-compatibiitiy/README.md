@@ -3,7 +3,7 @@
 
 # 快速使用
 
-- 安装git、nodejs工具，下载本库代码。
+- 安装git、nodejs(14.21版本)工具，下载本库代码。
 
 ```bash
 git clone https://gitee.com/chenwenjiehw/js-e2e.git
