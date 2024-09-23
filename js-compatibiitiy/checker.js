@@ -7,7 +7,7 @@ const iconv = require('iconv-lite');
 
 const commonCmdOptions = { encoding: "utf8", stdio: "inherit" };
 const CMD_NPM = process.platform === "win32" ? "npm.cmd" : "npm";
-const CMD_ESLINT = process.platform === "win32" ? `${__dirname}.\\node_modules\\.bin\\eslint.cmd` : `${__dirname}.\\node_modules\\.bin\\eslint`;
+const CMD_ESLINT = process.platform === "win32" ? `${__dirname}.\\node_modules\\.bin\\eslint.cmd` : `${__dirname}/node_modules/.bin/eslint`;
 const CWD = process.cwd();
 
 function removeLintrc(dirFullname) {
